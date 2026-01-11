@@ -50,8 +50,12 @@ class UserSerializer(serializers.ModelSerializer):
         validated_data.pop("confirm_password", None)
         password = validated_data.pop("password")
 
+        # Ensure email is present
+        if not validated_data.get('email'):
+            raise serializers.ValidationError({"email": "Email is required"})
+
         # Always set username to email for consistency
-        validated_data['username'] = validated_data.get('email')
+        validated_data['username'] = validated_data['email']
 
         # If full_name provided, split into first_name and last_name
         if full_name:
@@ -68,19 +72,15 @@ class UserSerializer(serializers.ModelSerializer):
         # Create profile with user role by default
         profile, created = UserProfile.objects.get_or_create(
             user=user,
-            defaults={'role': 'user'}
+            defaults={'role': 'user', 'phone': phone if phone else None}
         )
-        if not created:
-            # Profile existed, ensure role is set
+        
+        # Update profile if needed
+        if not created or phone:
             if not profile.role:
                 profile.role = 'user'
-        
-        # Save phone if provided
-        if phone:
-            profile.phone = phone
-            profile.save()
-        elif created:
-            # Only save if we just created it and didn't need to update phone
+            if phone:
+                profile.phone = phone
             profile.save()
 
         return user
