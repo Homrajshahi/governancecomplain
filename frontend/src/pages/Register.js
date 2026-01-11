@@ -45,12 +45,28 @@ export default function Register() {
       });
       navigate('/login');
     } catch (err) {
-      setError(
-        err?.response?.data?.email?.[0] ||
-        err?.response?.data?.password?.[0] ||
-        err?.response?.data?.detail ||
-        'Registration failed'
-      );
+      // Log full error for debugging
+      console.error('Registration error:', err?.response?.data || err?.message);
+      
+      // Extract error message from various possible response formats
+      let errorMsg = 'Registration failed';
+      const data = err?.response?.data;
+      
+      if (data?.detail) {
+        errorMsg = data.detail;
+      } else if (data?.email) {
+        errorMsg = Array.isArray(data.email) ? data.email[0] : data.email;
+      } else if (data?.password) {
+        errorMsg = Array.isArray(data.password) ? data.password[0] : data.password;
+      } else if (data?.non_field_errors) {
+        errorMsg = Array.isArray(data.non_field_errors) ? data.non_field_errors[0] : data.non_field_errors;
+      } else if (typeof data === 'string') {
+        errorMsg = data;
+      } else if (err?.message) {
+        errorMsg = err.message;
+      }
+      
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }

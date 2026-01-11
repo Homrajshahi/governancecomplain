@@ -33,7 +33,21 @@ export default function Login() {
       
       navigate('/dashboard');
     } catch (err) {
-      setError(err?.response?.data?.detail || 'Login failed. Please check your credentials.');
+      // Log full error for debugging
+      console.error('Login error:', err?.response?.data || err?.message);
+      
+      let errorMsg = 'Login failed. Please check your credentials.';
+      const data = err?.response?.data;
+      
+      if (data?.detail) {
+        errorMsg = data.detail;
+      } else if (typeof data === 'string') {
+        errorMsg = data;
+      } else if (err?.message) {
+        errorMsg = err.message;
+      }
+      
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
