@@ -1,0 +1,8 @@
+[build]
+providers = ["python"]
+
+[build.env]
+PYTHONUNBUFFERED = "1"
+
+[deploy]
+command = "cd backend && python manage.py migrate && gunicorn core.wsgi --log-file -"
