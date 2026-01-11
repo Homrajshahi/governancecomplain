@@ -68,13 +68,22 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "core.wsgi.application"
 
+# Database Configuration
+DATABASE_URL = os.environ.get("DATABASE_URL")
 POSTGRES_DB = os.environ.get("POSTGRES_DB")
 POSTGRES_USER = os.environ.get("POSTGRES_USER")
 POSTGRES_PASSWORD = os.environ.get("POSTGRES_PASSWORD")
 POSTGRES_HOST = os.environ.get("POSTGRES_HOST", "localhost")
 POSTGRES_PORT = os.environ.get("POSTGRES_PORT", "5432")
 
-if POSTGRES_DB and POSTGRES_USER and POSTGRES_PASSWORD:
+if DATABASE_URL:
+    # Railway provides DATABASE_URL
+    import dj_database_url
+    DATABASES = {
+        "default": dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
+    }
+elif POSTGRES_DB and POSTGRES_USER and POSTGRES_PASSWORD:
+    # Manual PostgreSQL configuration
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
@@ -86,6 +95,7 @@ if POSTGRES_DB and POSTGRES_USER and POSTGRES_PASSWORD:
         }
     }
 else:
+    # SQLite fallback for local development
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
