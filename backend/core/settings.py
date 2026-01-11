@@ -4,8 +4,8 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-secret-key-change-me")
-DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
-ALLOWED_HOSTS = [host for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if host]
+DEBUG = os.environ.get("DJANGO_DEBUG", "False") == "True"
+ALLOWED_HOSTS = [host for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,*.railway.app,*.vercel.app").split(",") if host]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -118,22 +118,11 @@ REST_FRAMEWORK = {
     ),
 }
 
-# CORS Configuration
-cors_origins = os.environ.get("CORS_ALLOWED_ORIGINS", "")
-if cors_origins:
-    CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins.split(",") if origin.strip()]
-    CORS_ALLOW_ALL_ORIGINS = False
-elif not DEBUG:
-    # In production without explicit config, allow all origins
-    CORS_ALLOW_ALL_ORIGINS = True
-else:
-    # Development fallback
-    CORS_ALLOWED_ORIGINS = [
-        "http://localhost:3000",
-        "http://localhost:5173",
-    ]
-    CORS_ALLOW_ALL_ORIGINS = False
+# CORS Configuration - Allow all origins for now
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 
+# CSRF Trusted Origins
 csrf_origins = os.environ.get("CSRF_TRUSTED_ORIGINS", "")
 if csrf_origins:
     CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins.split(",") if origin.strip()]
@@ -141,6 +130,8 @@ else:
     CSRF_TRUSTED_ORIGINS = [
         "http://localhost:3000",
         "http://localhost:5173",
+        "https://*.railway.app",
+        "https://*.vercel.app",
     ]
 
 
