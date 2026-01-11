@@ -65,14 +65,23 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
 
-        # Save phone on profile if provided
-        profile, _ = UserProfile.objects.get_or_create(user=user)
+        # Create profile with user role by default
+        profile, created = UserProfile.objects.get_or_create(
+            user=user,
+            defaults={'role': 'user'}
+        )
+        if not created:
+            # Profile existed, ensure role is set
+            if not profile.role:
+                profile.role = 'user'
+        
+        # Save phone if provided
         if phone:
             profile.phone = phone
-        # Default all API registrations to end-user role
-        if not profile.role:
-            profile.role = "user"
-        profile.save()
+            profile.save()
+        elif created:
+            # Only save if we just created it and didn't need to update phone
+            profile.save()
 
         return user
 
