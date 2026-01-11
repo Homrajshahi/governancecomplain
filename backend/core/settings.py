@@ -122,15 +122,17 @@ REST_FRAMEWORK = {
 cors_origins = os.environ.get("CORS_ALLOWED_ORIGINS", "")
 if cors_origins:
     CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins.split(",") if origin.strip()]
+    CORS_ALLOW_ALL_ORIGINS = False
+elif not DEBUG:
+    # In production without explicit config, allow all origins
+    CORS_ALLOW_ALL_ORIGINS = True
 else:
-    # Development fallback or allow all for Railway
+    # Development fallback
     CORS_ALLOWED_ORIGINS = [
         "http://localhost:3000",
         "http://localhost:5173",
     ]
-    # In production without explicit config, allow all Vercel domains
-    if not DEBUG:
-        CORS_ALLOW_ALL_ORIGINS = True
+    CORS_ALLOW_ALL_ORIGINS = False
 
 csrf_origins = os.environ.get("CSRF_TRUSTED_ORIGINS", "")
 if csrf_origins:
@@ -140,4 +142,5 @@ else:
         "http://localhost:3000",
         "http://localhost:5173",
     ]
+
 
