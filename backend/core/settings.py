@@ -77,11 +77,29 @@ POSTGRES_HOST = os.environ.get("POSTGRES_HOST", "localhost")
 POSTGRES_PORT = os.environ.get("POSTGRES_PORT", "5432")
 
 if DATABASE_URL:
-    # Railway provides DATABASE_URL
-    import dj_database_url
-    DATABASES = {
-        "default": dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
-    }
+    # Railway provides DATABASE_URL - parse it manually
+    # Format: postgresql://user:password@host:port/dbname
+    from urllib.parse import urlparse
+    try:
+        db_config = urlparse(DATABASE_URL)
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.postgresql",
+                "NAME": db_config.path[1:],  # Remove leading /
+                "USER": db_config.username,
+                "PASSWORD": db_config.password,
+                "HOST": db_config.hostname,
+                "PORT": db_config.port or 5432,
+            }
+        }
+    except Exception:
+        # Fallback if parsing fails
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.sqlite3",
+                "NAME": BASE_DIR / "db.sqlite3",
+            }
+        }
 elif POSTGRES_DB and POSTGRES_USER and POSTGRES_PASSWORD:
     # Manual PostgreSQL configuration
     DATABASES = {
